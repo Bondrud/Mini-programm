@@ -1,0 +1,53 @@
+name: Release
+
+# Сборка Windows-версии (exe) и публикация в GitHub Releases.
+# Запускается пушем тега вида v1.0.0 или вручную со страницы Actions.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Сборка exe и публикация релиза
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Установка зависимостей
+        run: npm install
+
+      - name: Сборка exe (electron-builder: установщик + портативный)
+        run: npx electron-builder --win nsis portable --publish never
+
+      - name: Записать версию из package.json
+        id: ver
+        shell: pwsh
+        run: |
+          $v = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Собрать ZIP с HTML-версией (без установки, любая ОС)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path index.html,css,js,LICENSE,README.md -DestinationPath "dist/GenshinCalc-HTML-${{ steps.ver.outputs.version }}.zip"
+
+      - name: Опубликовать релиз
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: 'Калькулятор примогемов v${{ steps.ver.outputs.version }}'
+          body_path: docs/release-notes.md
+          files: |
+            dist/GenshinCalc-Setup-*.exe
+            dist/GenshinCalc-Portable-*.exe
+            dist/GenshinCalc-HTML-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

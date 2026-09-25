@@ -2,9 +2,14 @@
   "name": "genshin-primogem-calculator",
   "version": "1.0.0",
   "description": "Калькулятор примогемов Genshin Impact: сколько примогемов нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате",
+  "author": "Bondrud",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable",
+    "dist:dir": "electron-builder --win --dir"
   },
   "repository": {
     "type": "git",
@@ -15,7 +20,39 @@
     "primogems",
     "calculator",
     "wishes",
-    "планировщик"
+    "electron"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.bondrud.genshincalc",
+    "productName": "Genshin Primogem Calculator",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "css/**/*",
+      "js/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "icon": "electron/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "GenshinCalc-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "GenshinCalc-Portable-${version}.${ext}"
+    }
+  }
 }
