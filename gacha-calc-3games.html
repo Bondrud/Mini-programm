@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор круток — Genshin · Endfield · NTE</title>
+<style>
+  :root{
+    --bg:#0d1017;
+    --card:#161a24;
+    --card2:#1d2230;
+    --line:#2a3143;
+    --text:#e8ecf5;
+    --muted:#8d97ad;
+    --teal:#5fd8c4;
+    --red:#ff7b7b;
+    --green:#6fdb8e;
+    --accent:#f0c97a;
+    --accent2:#d9a544;
+    --accent-soft:rgba(240,201,122,.14);
+    --accent-line:rgba(240,201,122,.45);
+  }
+  body.g-endfield{
+    --accent:#5fd8c4;
+    --accent2:#2fae9a;
+    --accent-soft:rgba(95,216,196,.14);
+    --accent-line:rgba(95,216,196,.45);
+  }
+  body.g-nte{
+    --accent:#b79cff;
+    --accent2:#8e6ef0;
+    --accent-soft:rgba(183,156,255,.14);
+    --accent-line:rgba(183,156,255,.45);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1000px 500px at 12% -10%, var(--accent-soft), transparent 60%),
+      radial-gradient(900px 500px at 95% 0%, rgba(95,216,196,.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    padding:22px 16px 60px;
+    transition:background .3s;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+
+  header{text-align:center;margin-bottom:16px}
+  h1{
+    font-size:clamp(21px,4.4vw,30px);
+    margin:0 0 6px;
+    letter-spacing:.2px;
+    background:linear-gradient(92deg,var(--accent),#fff2d0 55%,var(--teal));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{margin:0;color:var(--muted);font-size:14px}
+
+  /* ---- вкладки ---- */
+  .tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap;justify-content:center}
+  .tab{
+    flex:1 1 180px;max-width:300px;
+    background:#141822;border:1px solid var(--line);color:#c3cbdc;
+    padding:11px 14px;border-radius:12px;cursor:pointer;
+    font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.2px;
+    transition:.16s;
+  }
+  .tab:hover{background:#1a1f2c;color:#fff;border-color:#3b4560}
+  .tab.on{
+    background:var(--accent-soft);
+    border-color:var(--accent-line);
+    color:var(--accent);
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+  }
+
+  .card{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+  }
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:start}
+  .field{min-width:0;display:flex;flex-direction:column}
+  .field .chips{margin-top:9px}
+  label{display:block;font-size:13px;color:var(--muted);font-weight:600}
+  label .hint{font-weight:400;opacity:.75}
+  input[type=date],input[type=number]{
+    width:100%;margin-top:6px;padding:11px 12px;
+    background:#0e121b;border:1px solid var(--line);border-radius:10px;
+    color:var(--text);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;
+    outline:none;transition:border-color .15s, box-shadow .15s;
+    font-family:inherit;
+  }
+  input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent-soft)}
+  input[type=date]{color-scheme:dark}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+  .chips button{
+    background:#232a3a;border:1px solid var(--line);color:#cfd6e6;
+    padding:7px 11px;border-radius:999px;font-size:12.5px;font-weight:600;
+    cursor:pointer;font-family:inherit;transition:.15s;
+  }
+  .chips button:hover{background:#2c3547;border-color:#3b4560;color:#fff}
+  .chips button.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+
+  .footrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
+  .note{font-size:12.5px;color:var(--muted);margin:0}
+  .reset{
+    background:#1b2030;border:1px solid var(--line);color:#aeb7c9;
+    padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:700;
+    cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;
+  }
+  .reset:hover{border-color:#5a3a3a;color:#ffb3b3;background:#2a1e22}
+
+  /* ---- результат ---- */
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:center}
+  @media(max-width:720px){.hero{grid-template-columns:1fr}}
+  .hero-main{
+    background:radial-gradient(400px 200px at 0% 0%,var(--accent-soft),transparent 70%);
+    border:1px solid var(--line);border-radius:14px;padding:16px;
+  }
+  .hero-label{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+  .big{font-size:clamp(32px,8vw,46px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 2px;color:var(--accent)}
+  .big .unit{font-size:15px;font-weight:600;color:var(--muted);margin-left:6px}
+  .alt{font-size:15px;color:#c8d0e2}
+  .alt b{color:var(--teal);font-variant-numeric:tabular-nums}
+
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{background:#12161f;border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:600}
+  .stat .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px}
+  .stat .v small{font-size:12px;font-weight:600;color:var(--muted)}
+
+  .bar{height:10px;background:#0e121b;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:14px}
+  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--teal));transition:width .35s ease}
+  .bar-info{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
+
+  .warnbox{border-color:rgba(255,123,123,.5);background:rgba(255,123,123,.08)}
+  .err{color:var(--red);font-weight:700;font-size:14px;margin:0}
+</style>
+</head>
+<body class="g-genshin">
+<div class="wrap">
+
+  <header>
+    <h1>💰 Калькулятор круток до цели</h1>
+    <p class="sub">Сколько нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-game="genshin">Genshin Impact</button>
+    <button class="tab" data-game="endfield">Arknights: Endfield</button>
+    <button class="tab" data-game="nte">NTE</button>
+  </nav>
+
+  <section class="card">
+    <div class="grid">
+      <div class="field">
+        <label>Дата цели
+          <input type="date" id="targetDate">
+        </label>
+        <div class="chips">
+          <button data-days="7">через неделю</button>
+          <button data-days="14">2 недели</button>
+          <button data-days="30">месяц</button>
+          <button data-days="42">патч (42 дня)</button>
+          <button data-days="90">3 месяца</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label><span id="lblTarget">Хочу иметь круток</span> <span class="hint">(цель)</span>
+          <input type="number" id="targetWishes" min="0" step="1" inputmode="numeric">
+        </label>
+        <div class="chips" id="wishChips"></div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="field">
+        <label><span id="lblHaveW">Есть круток сейчас</span> <span class="hint" id="lblHaveWHint">(судьбы)</span>
+          <input type="number" id="haveWishes" min="0" step="1" value="0" inputmode="numeric">
+        </label>
+      </div>
+      <div class="field">
+        <label><span id="lblHaveP">Есть примогемов сейчас</span>
+          <input type="number" id="havePrimos" min="0" step="1" value="0" inputmode="numeric">
+        </label>
+      </div>
+    </div>
+
+    <div class="footrow">
+      <p class="note" id="noteLine"></p>
+      <button class="reset" id="resetBtn">⟲ Сбросить вкладку</button>
+    </div>
+  </section>
+
+  <div id="out"></div>
+
+</div>
+
+<script>
+(function(){
+  // ================= ДАННЫЕ ПО ИГРАМ =================
+  var GAMES = {
+    genshin: {
+      name: 'Genshin Impact',
+      bodyClass: 'g-genshin',
+      perPull: 160,
+      currency: 'примогемов',            // «нужно X примогемов / день»
+      curStat: 'примогемов',             // «Не хватает примогемов»
+      havePLabel: 'Есть примогемов сейчас',
+      haveWHint: '(судьбы)',
+      chips: [180, 360, 540, 720, 900, 1080, 1260],
+      note: 'Расчёт: 1 крутка (Переплетённая судьба) = 160 примогемов.'
+    },
+    endfield: {
+      name: 'Arknights: Endfield',
+      bodyClass: 'g-endfield',
+      perPull: 500,
+      currency: 'Oroberyl',
+      curStat: 'Oroberyl',
+      havePLabel: 'Есть Oroberyl сейчас',
+      haveWHint: '(HH-пермиты)',
+      chips: [120, 240, 360, 480, 600, 720, 840],
+      note: 'Расчёт: 1 крутка (Chartered HH Permit) = 500 Oroberyl.'
+    },
+    nte: {
+      name: 'Neverness to Everness',
+      bodyClass: 'g-nte',
+      perPull: 160,
+      currency: 'Annulith',
+      curStat: 'Annulith',
+      havePLabel: 'Есть Annulith сейчас',
+      haveWHint: '(Solid Dice)',
+      chips: [90, 180, 270, 360, 450, 540, 630],
+      note: 'Расчёт: 1 крутка (Solid Dice) = 160 Annulith.'
+    }
+  };
+  var ORDER = ['genshin', 'endfield', 'nte'];
+  var DAY_MS = 86400000;
+  var current = 'genshin';
+  var state = {};   // состояния всех вкладок
+
+  var els = {
+    body:    document.body,
+    tabs:    document.getElementById('tabs'),
+    date:    document.getElementById('targetDate'),
+    target:  document.getElementById('targetWishes'),
+    haveW:   document.getElementById('haveWishes'),
+    haveP:   document.getElementById('havePrimos'),
+    wishChips: document.getElementById('wishChips'),
+    lblTarget: document.getElementById('lblTarget'),
+    lblHaveW:  document.getElementById('lblHaveW'),
+    lblHaveWHint: document.getElementById('lblHaveWHint'),
+    lblHaveP:  document.getElementById('lblHaveP'),
+    noteLine: document.getElementById('noteLine'),
+    resetBtn: document.getElementById('resetBtn'),
+    out:     document.getElementById('out')
+  };
+
+  // ================= УТИЛИТЫ =================
+  function num(el){ var v = parseFloat(String(el.value).replace(',', '.')); return isFinite(v) && v > 0 ? v : 0; }
+  function fmt(n){ return Math.round(n).toLocaleString('ru-RU'); }
+  function fmt1(n){ return n.toLocaleString('ru-RU', {minimumFractionDigits:1, maximumFractionDigits:1}); }
+  function fmt2(n){ return n.toLocaleString('ru-RU', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function up(n){ return Math.ceil(n - 1e-9); }
+
+  function plural(n, one, few, many){
+    n = Math.abs(Math.round(n)) % 100;
+    var n1 = n % 10;
+    if (n > 10 && n < 20) return many;
+    if (n1 === 1) return one;
+    if (n1 >= 2 && n1 <= 4) return few;
+    return many;
+  }
+  function days(n){ return plural(n,'день','дня','дней'); }
+  function wishes(n){ return plural(n,'крутка','крутки','круток'); }
+
+  function todayMidnight(){ var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function isoLocal(d){
+    var m = ('0' + (d.getMonth() + 1)).slice(-2), day = ('0' + d.getDate()).slice(-2);
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+  function formatDate(d){
+    try { return d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}); }
+    catch(e){ return isoLocal(d); }
+  }
+
+  // ================= ПАМЯТЬ (своя у каждой вкладки) =================
+  var storageOK = (function(){
+    try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; }
+    catch(e){ return false; }
+  })();
+
+  function defaultState(key){
+    var d = todayMidnight();
+    d.setDate(d.getDate() + 42);
+    return { date: isoLocal(d), target: GAMES[key].chips[0], haveW: 0, haveP: 0 };
+  }
+  function loadState(key){
+    if (storageOK){
+      try {
+        var raw = localStorage.getItem('gacha3:' + key);
+        if (raw){
+          var o = JSON.parse(raw);
+          var d = defaultState(key);
+          return {
+            date:   typeof o.date === 'string' && o.date ? o.date : d.date,
+            target: isFinite(o.target) ? o.target : d.target,
+            haveW:  isFinite(o.haveW)  ? o.haveW  : 0,
+            haveP:  isFinite(o.haveP)  ? o.haveP  : 0
+          };
+        }
+      } catch(e){}
+    }
+    return defaultState(key);
+  }
+  function saveState(key){
+    if (!storageOK) return;
+    try { localStorage.setItem('gacha3:' + key, JSON.stringify(state[key])); } catch(e){}
+  }
+
+  // ================= ПОДСВЕТКА ЧИПСОВ =================
+  function syncChips(){
+    var today = todayMidnight();
+    var parts = (els.date.value || '').split('-'), diff = null;
+    if (parts.length === 3){
+      var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+      if (!isNaN(d.getTime())) diff = Math.round((d - today) / DAY_MS);
+    }
+    document.querySelectorAll('.chips button[data-days]').forEach(function(b){
+      b.classList.toggle('on', diff !== null && diff === parseInt(b.dataset.days, 10));
+    });
+    var goal = num(els.target);
+    document.querySelectorAll('.chips button[data-wishes]').forEach(function(b){
+      b.classList.toggle('on', goal > 0 && goal === parseFloat(b.dataset.wishes));
+    });
+  }
+
+  // ================= ОТРИСОВКА =================
+  function render(){
+    var G = GAMES[current];
+    var WISH = G.perPull;
+    var haveW = num(els.haveW), haveP = num(els.haveP), goal = num(els.target);
+    var totalNow = haveW * WISH + haveP;
+    syncChips();
+
+    // дата
+    var parts = (els.date.value || '').split('-');
+    var dateValid = parts.length === 3;
+    var target = null;
+    if (dateValid){
+      target = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+      if (isNaN(target.getTime())) { target = null; dateValid = false; }
+    }
+    if (!dateValid){
+      els.out.innerHTML = '<section class="card warnbox"><p class="err">⚠ Укажите дату цели — без неё расчёт невозможен.</p></section>';
+      return;
+    }
+
+    var rawDays = Math.round((target - todayMidnight()) / DAY_MS);
+    var daysLeft = Math.max(rawDays, 1);
+
+    var needTotal = goal * WISH;
+    var missing = Math.max(0, needTotal - totalNow);
+    var perDay = missing / daysLeft;
+    var perDayReq = up(perDay);
+    var perWishDay = perDay / WISH;
+
+    var progress = needTotal > 0 ? Math.min(100, totalNow / needTotal * 100) : 100;
+    var primosNow = Math.floor(totalNow / WISH);
+
+    var html = '';
+
+    // ---- предупреждения
+    if (rawDays < 0){
+      html += '<section class="card warnbox"><p class="err">⚠ Дата цели уже в прошлом (' + formatDate(target) + '). Укажите будущую дату.</p></section>';
+    } else if (rawDays === 0){
+      html += '<section class="card warnbox"><p class="err">⚠ Дата цели — сегодня. Считать «в день» нечего, поэтому расчёт сделан как для 1 дня.</p></section>';
+    } else if (rawDays === 1){
+      html += '<section class="card warnbox"><p class="err">⏳ До цели остался 1 день — успеть почти нереально, но цифры посчитаны.</p></section>';
+    }
+
+    if (goal <= 0){
+      els.out.innerHTML = html + '<section class="card"><p class="err">Укажите, сколько круток вы хотите иметь (цель больше 0).</p></section>';
+      return;
+    }
+
+    // ---- цель уже достигнута
+    if (missing <= 0){
+      var extra = Math.floor((totalNow - needTotal) / WISH);
+      els.out.innerHTML = html +
+        '<section class="card"><div class="hero-main" style="border-color:rgba(111,219,142,.4)">' +
+          '<div class="hero-label">Цель уже достигнута</div>' +
+          '<div class="big" style="color:var(--green)">' + fmt(primosNow) + '<span class="unit">' + wishes(primosNow) + ' есть на руках</span></div>' +
+          '<div class="alt">К ' + formatDate(target) + ' ничего зарабатывать не нужно. Запас: <b>' + fmt(extra) + '</b> ' + wishes(extra) + ' сверх цели.</div>' +
+        '</div></section>';
+      return;
+    }
+
+    // ---- главный блок
+    html += '<section class="card"><div class="hero">' +
+      '<div class="hero-main">' +
+        '<div class="hero-label">Нужно зарабатывать</div>' +
+        '<div class="big">' + fmt(perDayReq) + '<span class="unit">' + G.currency + ' / день</span></div>' +
+        '<div class="alt">Это <b>' + fmt2(perWishDay) + '</b> ' + wishes(perWishDay) + ' в день' +
+          (perWishDay < 1 ? ' (то есть 1 крутка примерно за ' + fmt1(1 / perWishDay) + ' ' + days(1 / perWishDay) + ')' : '') + '</div>' +
+        '<div class="alt" style="margin-top:6px">≈ <b>' + fmt(perDayReq * 7) + '</b> ' + G.currency + ' в неделю · <b>' + fmt(perDayReq * 30) + '</b> в месяц</div>' +
+      '</div>' +
+      '<div class="stats">' +
+        '<div class="stat"><div class="k">До цели</div><div class="v">' + fmt(Math.max(rawDays, 0)) + ' <small>' + days(Math.max(rawDays, 0)) + (rawDays < 0 ? ' (дата прошла)' : '') + '</small></div></div>' +
+        '<div class="stat"><div class="k">Дата цели</div><div class="v" style="font-size:15px">' + formatDate(target) + '</div></div>' +
+        '<div class="stat"><div class="k">Не хватает</div><div class="v">' + fmt(missing / WISH) + ' <small>' + wishes(missing / WISH) + '</small></div></div>' +
+        '<div class="stat"><div class="k">Не хватает ' + G.curStat + '</div><div class="v">' + fmt(missing) + '</div></div>' +
+        '<div class="stat"><div class="k">Есть сейчас</div><div class="v">' + fmt(primosNow) + ' <small>' + wishes(primosNow) + '</small></div></div>' +
+        '<div class="stat"><div class="k">Цель</div><div class="v">' + fmt(goal) + ' <small>' + wishes(goal) + '</small></div></div>' +
+      '</div></div>' +
+
+      '<div class="bar"><i style="width:' + progress.toFixed(2) + '%"></i></div>' +
+      '<div class="bar-info"><span>Прогресс: ' + fmt(primosNow) + ' из ' + fmt(goal) + ' ' + wishes(goal) + '</span><span>' + progress.toFixed(1).replace('.', ',') + '%</span></div>' +
+    '</section>';
+
+    els.out.innerHTML = html;
+  }
+
+  // ================= ПЕРЕКЛЮЧЕНИЕ ИГР =================
+  function applyStateToInputs(){
+    var s = state[current];
+    els.date.value = s.date;
+    els.target.value = s.target;
+    els.haveW.value = s.haveW;
+    els.haveP.value = s.haveP;
+  }
+  function patchLabels(){
+    var G = GAMES[current];
+    els.lblTarget.textContent = 'Хочу иметь круток';
+    els.lblHaveW.textContent = 'Есть круток сейчас';
+    els.lblHaveWHint.textContent = G.haveWHint;
+    els.lblHaveP.textContent = G.havePLabel;
+    els.noteLine.textContent = G.note;
+  }
+  function buildWishChips(){
+    var G = GAMES[current];
+    els.wishChips.innerHTML = G.chips.map(function(v){
+      return '<button data-wishes="' + v + '">' + v + '</button>';
+    }).join('');
+    bindChips(els.wishChips);
+  }
+  function setGame(key){
+    // сохраняем текущие значения в состояние уходящей вкладки
+    state[current] = readInputs();
+    saveState(current);
+
+    current = key;
+    els.body.className = GAMES[key].bodyClass;
+    document.querySelectorAll('.tab').forEach(function(b){
+      b.classList.toggle('on', b.dataset.game === key);
+    });
+    patchLabels();
+    buildWishChips();
+    applyStateToInputs();
+    render();
+  }
+
+  // ================= ЧТЕНИЕ / ЗАПИСЬ ПОЛЕЙ =================
+  function readInputs(){
+    return {
+      date: els.date.value || '',
+      target: num(els.target),
+      haveW: num(els.haveW),
+      haveP: num(els.haveP)
+    };
+  }
+  function touch(){          // любое изменение полей
+    state[current] = readInputs();
+    saveState(current);
+    render();
+  }
+
+  // ================= ОБРАБОТЧИКИ =================
+  ['input','change'].forEach(function(ev){
+    els.date.addEventListener(ev, touch);
+    [els.target, els.haveW, els.haveP].forEach(function(el){
+      el.addEventListener(ev, touch);
+      el.addEventListener('blur', function(){
+        if (el.value !== '') el.value = Math.max(0, Math.round(num(el)));
+        touch();
+      });
+    });
+  });
+
+  function bindChips(root){
+    root.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (btn.dataset.days){
+          var d = todayMidnight();
+          d.setDate(d.getDate() + parseInt(btn.dataset.days, 10));
+          els.date.value = isoLocal(d);
+          touch();
+        } else if (btn.dataset.wishes){
+          els.target.value = btn.dataset.wishes;
+          touch();
+        }
+      });
+    });
+  }
+  bindChips(document);   // кнопки даты статичны, кнопки цели — пересобираются
+
+  els.tabs.addEventListener('click', function(e){
+    var btn = e.target.closest ? e.target.closest('.tab') : null;
+    if (btn && btn.dataset.game && btn.dataset.game !== current) setGame(btn.dataset.game);
+  });
+
+  els.resetBtn.addEventListener('click', function(){
+    state[current] = defaultState(current);
+    applyStateToInputs();
+    saveState(current);
+    render();
+  });
+
+  // ================= СТАРТ =================
+  ORDER.forEach(function(k){ state[k] = loadState(k); });
+  els.body.className = GAMES[current].bodyClass;
+  patchLabels();
+  buildWishChips();
+  applyStateToInputs();
+  render();
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40c1f90dd3e20a3',t:'MTc5MDM2MTI2OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
