@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Калькулятор примогемов — сколько нужно в день</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>💰 Калькулятор примогемов до цели</h1>
+    <p class="sub">Сколько нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате</p>
+  </header>
+
+  <section class="card">
+    <div class="grid">
+      <div class="field">
+        <label>Дата цели
+          <input type="date" id="targetDate">
+        </label>
+        <div class="chips">
+          <button data-days="7">через неделю</button>
+          <button data-days="14">2 недели</button>
+          <button data-days="30">месяц</button>
+          <button data-days="42">патч (42 дня)</button>
+          <button data-days="90">3 месяца</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Хочу иметь круток <span class="hint">(цель)</span>
+          <input type="number" id="targetWishes" min="0" step="1" value="180" inputmode="numeric">
+        </label>
+        <div class="chips">
+          <button data-wishes="180">180</button>
+          <button data-wishes="360">360</button>
+          <button data-wishes="540">540</button>
+          <button data-wishes="720">720</button>
+          <button data-wishes="900">900</button>
+          <button data-wishes="1080">1080</button>
+          <button data-wishes="1260">1260</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="field">
+        <label>Есть круток сейчас <span class="hint">(судьбы)</span>
+          <input type="number" id="haveWishes" min="0" step="1" value="0" inputmode="numeric">
+        </label>
+      </div>
+      <div class="field">
+        <label>Есть примогемов сейчас
+          <input type="number" id="havePrimos" min="0" step="1" value="0" inputmode="numeric">
+        </label>
+      </div>
+    </div>
+
+    <p class="note">Расчёт: 1 крутка (Переплетённая судьба) = 160 примогемов.</p>
+  </section>
+
+  <div id="out"></div>
+
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
