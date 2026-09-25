@@ -4,6 +4,8 @@
 
 const test = require('node:test').test;
 const assert = require('node:assert/strict');
+
+require('../js/games.js'); // выставляет globalThis.Games — каталог игр для расчёта
 const Calc = require('../js/calc.js');
 
 /** Заготовка входных данных: сегодня 25.09.2026, цель через 30 дней */
@@ -101,4 +103,70 @@ test('дата не указана', () => {
 test('цель должна быть больше нуля', () => {
   assert.equal(Calc.calculate(input({ goal: 0 })).invalidGoal, true);
   assert.equal(Calc.calculate(input({ goal: -5 })).invalidGoal, true);
+});
+
+/* ---- другие игры: стоимость крутки берётся из каталога (js/games.js) ---- */
+
+test('без игры считается по цене крутки Genshin Impact (160)', () => {
+  const r = Calc.calculate(input());
+  assert.equal(r.perPull, 160);
+  assert.equal(r.perPull, Calc.PRIMOS_PER_WISH);
+  assert.equal(r.needTotal, 180 * 160);
+});
+
+test('Arknights: Endfield — 1 крутка = 500 Oroberyl', () => {
+  const r = Calc.calculate(input({ game: 'endfield', goal: 120 }));
+  assert.equal(r.perPull, 500);
+  assert.equal(r.needTotal, 120 * 500);
+  assert.equal(r.missing, 60000);
+  assert.equal(r.perDay, 2000);
+  assert.equal(r.perDayReq, 2000);
+});
+
+test('Neverness to Everness — 1 крутка = 160 Annulith', () => {
+  const r = Calc.calculate(input({ game: 'nte', goal: 90 }));
+  assert.equal(r.perPull, 160);
+  assert.equal(r.needTotal, 14400);
+  assert.equal(r.perDay, 480);
+});
+
+test('накопления считаются в валюте своей игры', () => {
+  // Endfield: 2 крутки (1000) + 500 Oroberyl = 1500; цель 120 круток = 60000
+  const r = Calc.calculate(input({ game: 'endfield', goal: 120, haveWishes: 2, havePrimos: 500 }));
+  assert.equal(r.totalNow, 1500);
+  assert.equal(r.missing, 60000 - 1500);
+  assert.equal(r.perDayReq, 1950);
+});
+
+test('округление вверх работает и для цены 500', () => {
+  // 1 крутка за 3 дня: 500 / 3 = 166,67… → 167
+  const r = Calc.calculate(input({ game: 'endfield', goal: 1, targetDate: new Date(2026, 8, 28) }));
+  assert.equal(r.perDay, 500 / 3);
+  assert.equal(r.perDayReq, 167);
+});
+
+test('цель достигнута и запас — тоже в крутках своей игры', () => {
+  const r = Calc.calculate(input({ game: 'endfield', goal: 10, havePrimos: 6000 }));
+  assert.equal(r.goalReached, true);
+  assert.equal(r.primosNow, 12);    // 6000 / 500
+  assert.equal(r.extraWishes, 2);   // 1000 / 500
+});
+
+test('в результат попадает конфигурация игры — для подписей при отрисовке', () => {
+  const r = Calc.calculate(input({ game: 'nte' }));
+  assert.equal(r.game.key, 'nte');
+  assert.equal(r.game.currency, 'Annulith');
+  assert.equal(r.game.curStat, 'Annulith');
+});
+
+test('явный perPull переопределяет игру', () => {
+  const r = Calc.calculate(input({ game: 'genshin', goal: 10, perPull: 250 }));
+  assert.equal(r.perPull, 250);
+  assert.equal(r.needTotal, 2500);
+});
+
+test('неизвестная игра — расчёт по умолчанию, без падения', () => {
+  const r = Calc.calculate(input({ game: 'half-life-3', goal: 180 }));
+  assert.equal(r.perPull, 160);
+  assert.equal(r.game.key, 'genshin');
 });

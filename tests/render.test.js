@@ -12,6 +12,7 @@ const assert = require('node:assert/strict');
 require('../js/utils.js');   // выставляет globalThis.Utils
 const Calc = require('../js/calc.js');
 const Render = require('../js/render.js'); // подхватывает Utils при загрузке
+const Games = require('../js/games.js');   // каталог игр — для подписей валюты
 
 function calc(over) {
   return Calc.calculate(Object.assign({
@@ -64,4 +65,44 @@ test('цель достигнута — зелёная карточка с за�
   assert.match(html, /Запас:/);
   assert.match(html, /сверх цели/);
   assert.doesNotMatch(html, /Нужно зарабатывать/);
+});
+
+/* ---- подписи валюты зависят от игры ---- */
+
+function renderGame(gameKey, over) {
+  const game = Games.get(gameKey);
+  const el = out();
+  Render.render(el, calc(Object.assign({ game: gameKey }, over)), game);
+  return el.innerHTML;
+}
+
+test('Genshin Impact: примогемы в день и в нехватке', () => {
+  const html = renderGame('genshin');
+  assert.match(html, /примогемов \/ день/);
+  assert.match(html, /Не хватает примогемов/);
+});
+
+test('Arknights: Endfield: Oroberyl вместо примогемов', () => {
+  const html = renderGame('endfield', { goal: 120 });
+  assert.match(html, /Oroberyl \/ день/);
+  assert.match(html, /Не хватает Oroberyl/);
+  assert.match(html, /Oroberyl в неделю/);
+  assert.doesNotMatch(html, /примогемов/);
+});
+
+test('Neverness to Everness: Annulith вместо примогемов', () => {
+  const html = renderGame('nte', { goal: 90 });
+  assert.match(html, /Annulith \/ день/);
+  assert.match(html, /Не хватает Annulith/);
+});
+
+test('без игры подписи остаются примогемовыми (обратная совместимость)', () => {
+  const html = render(calc());
+  assert.match(html, /примогемов \/ день/);
+  assert.match(html, /Не хватает примогемов/);
+});
+
+test('дата цели рисуется уменьшенным шрифтом, как в остальной сетке', () => {
+  const html = render(calc());
+  assert.match(html, /<div class="v" style="font-size:15px">/);
 });
