@@ -43,7 +43,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.ver.outputs.version }}
-          name: 'Калькулятор примогемов v${{ steps.ver.outputs.version }}'
+          name: 'Калькулятор круток v${{ steps.ver.outputs.version }}'
           body_path: docs/release-notes.md
           files: |
             dist/GenshinCalc-Setup-*.exe

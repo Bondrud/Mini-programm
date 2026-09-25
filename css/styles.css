@@ -5,17 +5,35 @@
   --line:#2a3143;
   --text:#e8ecf5;
   --muted:#8d97ad;
-  --gold:#f0c97a;
-  --gold2:#d9a544;
   --teal:#5fd8c4;
   --red:#ff7b7b;
   --green:#6fdb8e;
+  /* акцент — цвет игры: у Genshin Impact золотой, остальные игры переопределяют ниже */
+  --accent:#f0c97a;
+  --accent2:#d9a544;
+  --accent-soft:rgba(240,201,122,.14);
+  --accent-line:rgba(240,201,122,.45);
 }
+/* Arknights: Endfield — бирюзовый */
+body.g-endfield{
+  --accent:#5fd8c4;
+  --accent2:#2fae9a;
+  --accent-soft:rgba(95,216,196,.14);
+  --accent-line:rgba(95,216,196,.45);
+}
+/* NTE (Neverness to Everness) — фиолетовый */
+body.g-nte{
+  --accent:#b79cff;
+  --accent2:#8e6ef0;
+  --accent-soft:rgba(183,156,255,.14);
+  --accent-line:rgba(183,156,255,.45);
+}
+
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
   background:
-    radial-gradient(1000px 500px at 12% -10%, rgba(240,201,122,.10), transparent 60%),
+    radial-gradient(1000px 500px at 12% -10%, var(--accent-soft), transparent 60%),
     radial-gradient(900px 500px at 95% 0%, rgba(95,216,196,.08), transparent 60%),
     var(--bg);
   color:var(--text);
@@ -23,18 +41,36 @@ body{
   line-height:1.45;
   -webkit-font-smoothing:antialiased;
   padding:22px 16px 60px;
+  transition:background .3s;
 }
 .wrap{max-width:940px;margin:0 auto}
 
-header{text-align:center;margin-bottom:22px}
+header{text-align:center;margin-bottom:16px}
 h1{
   font-size:clamp(21px,4.4vw,30px);
   margin:0 0 6px;
   letter-spacing:.2px;
-  background:linear-gradient(92deg,var(--gold),#fff2d0 55%,var(--teal));
+  background:linear-gradient(92deg,var(--accent),#fff2d0 55%,var(--teal));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .sub{margin:0;color:var(--muted);font-size:14px}
+
+/* ---- вкладки игр ---- */
+.tabs{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap;justify-content:center}
+.tab{
+  flex:1 1 180px;max-width:300px;
+  background:#141822;border:1px solid var(--line);color:#c3cbdc;
+  padding:11px 14px;border-radius:12px;cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:700;letter-spacing:.2px;
+  transition:.16s;
+}
+.tab:hover{background:#1a1f2c;color:#fff;border-color:#3b4560}
+.tab.on{
+  background:var(--accent-soft);
+  border-color:var(--accent-line);
+  color:var(--accent);
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
 
 .card{
   background:linear-gradient(180deg,var(--card),var(--card2));
@@ -57,7 +93,7 @@ input[type=date],input[type=number]{
   outline:none;transition:border-color .15s, box-shadow .15s;
   font-family:inherit;
 }
-input:focus{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(240,201,122,.14)}
+input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent-soft)}
 input[type=date]{color-scheme:dark}
 
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
@@ -67,7 +103,16 @@ input[type=date]{color-scheme:dark}
   cursor:pointer;font-family:inherit;transition:.15s;
 }
 .chips button:hover{background:#2c3547;border-color:#3b4560;color:#fff}
-.chips button.on{background:rgba(240,201,122,.16);border-color:var(--gold2);color:var(--gold)}
+.chips button.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+
+/* ---- нижняя строка формы: пояснение и сброс вкладки ---- */
+.footrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
+.reset{
+  background:#1b2030;border:1px solid var(--line);color:#aeb7c9;
+  padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;
+}
+.reset:hover{border-color:#5a3a3a;color:#ffb3b3;background:#2a1e22}
 
 /* Итоговая карточка */
 .hero{
@@ -75,11 +120,11 @@ input[type=date]{color-scheme:dark}
 }
 @media(max-width:720px){.hero{grid-template-columns:1fr}}
 .hero-main{
-  background:radial-gradient(400px 200px at 0% 0%,rgba(240,201,122,.14),transparent 70%);
+  background:radial-gradient(400px 200px at 0% 0%,var(--accent-soft),transparent 70%);
   border:1px solid var(--line);border-radius:14px;padding:16px;
 }
 .hero-label{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
-.big{font-size:clamp(32px,8vw,46px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 2px;color:var(--gold)}
+.big{font-size:clamp(32px,8vw,46px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 2px;color:var(--accent)}
 .big .unit{font-size:15px;font-weight:600;color:var(--muted);margin-left:6px}
 .alt{font-size:15px;color:#c8d0e2}
 .alt b{color:var(--teal);font-variant-numeric:tabular-nums}
@@ -91,7 +136,7 @@ input[type=date]{color-scheme:dark}
 .stat .v small{font-size:12px;font-weight:600;color:var(--muted)}
 
 .bar{height:10px;background:#0e121b;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:14px}
-.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--gold),var(--teal));transition:width .35s ease}
+.bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent2),var(--accent),var(--teal));transition:width .35s ease}
 .bar-info{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
 
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -102,6 +147,6 @@ tr:last-child td{border-bottom:none}
 
 h2{font-size:16px;margin:0 0 10px;color:#dfe6f3}
 h2 .tag{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
-.note{font-size:12.5px;color:var(--muted);margin-top:10px}
+.note{font-size:12.5px;color:var(--muted);margin:0}
 .warnbox{border-color:rgba(255,123,123,.5);background:rgba(255,123,123,.08)}
-.err{color:var(--red);font-weight:700;font-size:14px}
+.err{color:var(--red);font-weight:700;font-size:14px;margin:0}

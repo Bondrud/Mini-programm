@@ -1,7 +1,7 @@
 {
   "name": "genshin-primogem-calculator",
-  "version": "1.0.0",
-  "description": "Калькулятор примогемов Genshin Impact: сколько примогемов нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате",
+  "version": "1.1.0",
+  "description": "Калькулятор круток для Genshin Impact, Arknights: Endfield и Neverness to Everness: сколько валюты нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате",
   "author": "Bondrud",
   "private": true,
   "main": "electron/main.js",
@@ -17,6 +17,8 @@
   },
   "keywords": [
     "genshin-impact",
+    "arknights-endfield",
+    "neverness-to-everness",
     "primogems",
     "calculator",
     "wishes",

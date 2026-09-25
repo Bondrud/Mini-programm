@@ -1,11 +1,21 @@
 /*
  * Отрисовка результата: превращает то, что вернул Calc.calculate(), в HTML.
  * Загружается после js/utils.js (использует Utils для форматирования).
+ *
+ * Названия валют подставляются из игры — поэтому модуль принимает
+ * конфигурацию игры третьим аргументом либо берёт её из результата расчёта.
  */
 (function (global) {
   'use strict';
 
   var U = global.Utils;
+
+  /** Подписи, если игра не передана и не пришлась в результате (Genshin Impact) */
+  var DEFAULT_LABELS = { currency: 'примогемов', curStat: 'примогемов' };
+
+  function labelsOf(game, result) {
+    return game || result.game || DEFAULT_LABELS;
+  }
 
   /* ---- маленькие строители ---- */
 
@@ -13,8 +23,15 @@
     return '<section class="card warnbox"><p class="err">' + text + '</p></section>';
   }
 
-  function stat(label, valueHtml) {
-    return '<div class="stat"><div class="k">' + label + '</div><div class="v">' + valueHtml + '</div></div>';
+  /**
+   * Плитка со статистикой.
+   * @param {string} label     подпись
+   * @param {string} valueHtml значение (HTML)
+   * @param {string} [style]   дополнительные стили для значения
+   */
+  function stat(label, valueHtml, style) {
+    return '<div class="stat"><div class="k">' + label + '</div>' +
+      '<div class="v"' + (style ? ' style="' + style + '"' : '') + '>' + valueHtml + '</div></div>';
   }
 
   /* ---- предупреждения о крайних случаях ---- */
@@ -45,24 +62,24 @@
 
   /* ---- основной блок с планом накопления ---- */
 
-  function planHtml(r) {
+  function planHtml(r, L) {
     var daysToShow = Math.max(r.rawDays, 0);
     return '<section class="card"><div class="hero">' +
       '<div class="hero-main">' +
         '<div class="hero-label">Нужно зарабатывать</div>' +
-        '<div class="big">' + U.fmt(r.perDayReq) + '<span class="unit">примогемов / день</span></div>' +
+        '<div class="big">' + U.fmt(r.perDayReq) + '<span class="unit">' + L.currency + ' / день</span></div>' +
         '<div class="alt">Это <b>' + U.fmt2(r.perWishDay) + '</b> ' + U.wishes(r.perWishDay) + ' в день' +
           (r.perWishDay < 1
             ? ' (то есть 1 крутка примерно за ' + U.fmt1(1 / r.perWishDay) + ' ' + U.days(1 / r.perWishDay) + ')'
             : '') + '</div>' +
-        '<div class="alt" style="margin-top:6px">≈ <b>' + U.fmt(r.perDayReq * 7) + '</b> примогемов в неделю · <b>' +
-          U.fmt(r.perDayReq * 30) + '</b> в месяц</div>' +
+        '<div class="alt" style="margin-top:6px">≈ <b>' + U.fmt(r.perDayReq * 7) + '</b> ' + L.currency +
+          ' в неделю · <b>' + U.fmt(r.perDayReq * 30) + '</b> в месяц</div>' +
       '</div>' +
       '<div class="stats">' +
         stat('До цели', U.fmt(daysToShow) + ' <small>' + U.days(daysToShow) + (r.rawDays < 0 ? ' (дата прошла)' : '') + '</small>') +
-        stat('Дата цели', '<span style="font-size:15px">' + U.formatDate(r.targetDate) + '</span>') +
+        stat('Дата цели', U.formatDate(r.targetDate), 'font-size:15px') +
         stat('Не хватает', U.fmt(r.missingWishes) + ' <small>' + U.wishes(r.missingWishes) + '</small>') +
-        stat('Не хватает примогемов', U.fmt(r.missing)) +
+        stat('Не хватает ' + L.curStat, U.fmt(r.missing)) +
         stat('Есть сейчас', U.fmt(r.primosNow) + ' <small>' + U.wishes(r.primosNow) + '</small>') +
         stat('Цель', U.fmt(r.goal) + ' <small>' + U.wishes(r.goal) + '</small>') +
       '</div></div>' +
@@ -78,10 +95,11 @@
 
   /**
    * Нарисовать результат расчёта в элемент #out.
-   * @param {Element} outEl  контейнер для вывода
-   * @param {Object}  result результат Calc.calculate()
+   * @param {Element} outEl   контейнер для вывода
+   * @param {Object}  result  результат Calc.calculate()
+   * @param {Object} [game]   конфигурация игры (js/games.js) — подписи валюты
    */
-  function render(outEl, result) {
+  function render(outEl, result, game) {
     if (result.missingDate) {
       outEl.innerHTML = warnBox('⚠ Укажите дату цели — без неё расчёт невозможен.');
       return;
@@ -100,10 +118,10 @@
       return;
     }
 
-    outEl.innerHTML = html + planHtml(result);
+    outEl.innerHTML = html + planHtml(result, labelsOf(game, result));
   }
 
-  var api = { render: render };
+  var api = { render: render, DEFAULT_LABELS: DEFAULT_LABELS };
 
   // Браузер: window.Render; Node (тесты): module.exports
   global.Render = api;
