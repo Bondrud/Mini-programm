@@ -24,7 +24,7 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
-      - name: Сборка exe (electron-builder: установщик + портативный)
+      - name: Сборка exe (electron-builder — установщик и портативная версия)
         run: npx electron-builder --win nsis portable --publish never
 
       - name: Записать версию из package.json
