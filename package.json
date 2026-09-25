@@ -1,0 +1,21 @@
+{
+  "name": "genshin-primogem-calculator",
+  "version": "1.0.0",
+  "description": "Калькулятор примогемов Genshin Impact: сколько примогемов нужно зарабатывать в день, чтобы набрать нужное число круток к нужной дате",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bondrud/Mini-programm.git"
+  },
+  "keywords": [
+    "genshin-impact",
+    "primogems",
+    "calculator",
+    "wishes",
+    "планировщик"
+  ],
+  "license": "MIT"
+}
